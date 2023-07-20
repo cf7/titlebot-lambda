@@ -14,6 +14,3 @@ class Response:
     def __str__(self):
         return 'Response(body={}, statusCode={}, headers={})'.format(self.body, self.statusCode, self.headers)
         
-    @classmethod
-    def instanceFromException(cls, exception)
-        return cls(500, json.dumps({ 'error': exception }))
