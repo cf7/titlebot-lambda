@@ -1,6 +1,6 @@
 import json
 import urllib.request
-
+import os
 
 def makeHTTPRequest(url) -> str:
     html_content = None
@@ -23,49 +23,61 @@ def parseHTML(html: str) -> str:
             return html[start_index:end_index].strip()  # slice the title from between the indices
     return None
     
-    
+
 responseFactory = {
     "200": lambda title: {
             'statusCode': 200,
-            'body': json.dumps(title)
+            'body': json.dumps(title),
+            'headers': {
+                'Access-Control-Allow-Origin': os.environ['ALLOWED_ORIGINS'],
+                'Content-Type': 'application/json'
+            }
         },
     "500": lambda title: {
             'statusCode': 500,
-            'body': json.dumps(title)
+            'body': json.dumps(title),
+            'headers': {
+                'Access-Control-Allow-Origin': os.environ['ALLOWED_ORIGINS'],
+                'Content-Type': 'application/json'
+            }
         },
 }
 
 def lambda_handler(event, context):
     response = None
     statusCode = 200
+    title = None
+        # for later
+        # action = event.get("httpMethod")
+        # resource = event.get("resource")
+        # pathParameters = event.get("pathParameters")
+        # body = event.get("body")
+
+    queryStringParameters = event.get("queryStringParameters")
+    
+    print("queryStringParameters: ", queryStringParameters)
+    print("url: ", queryStringParameters.get("url"))
+    
+    url = None
+    
+    if queryStringParameters:
+        url = queryStringParameters.get("url")
+        
     try:
-        action = event.get("httpMethod")
-        resource = event.get("resource")
-        pathParameters = event.get("pathParameters")
-        queryStringParameters = event.get("queryStringParameters")
-        body = event.get("body")
-        
-        parsedBody = None
-        if body:
-            parsedBody = json.loads(body)
-        
-        print("========", parsedBody)
-        
-        url = None
-        if parsedBody:
-            url = parsedBody.get('url')
-            
         html = None
         if url:
-            print(url)
             html = makeHTTPRequest(url)
     
-        title = None
         if html:
             title = parseHTML(html)
     except Exception as e:
         statusCode = 500
-    
+        
+    if title is None:
+        statusCode = 500
+        
     getResponse = responseFactory.get(str(statusCode))
+    
+    print(getResponse(title))
     
     return getResponse(title)
