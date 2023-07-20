@@ -14,3 +14,10 @@ class Response:
     def __str__(self):
         return 'Response(body={}, statusCode={}, headers={})'.format(self.body, self.statusCode, self.headers)
         
+    def toDict(self):
+        respDict = dict(statusCode=self.statusCode, headers=self.headers)
+        
+        if self.body:
+            respDict['body'] = self.body
+        
+        return respDict

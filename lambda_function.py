@@ -54,4 +54,4 @@ def lambda_handler(event, context):
         
     getResponse = responseFactory.get(str(statusCode))
     
-    return getResponse(title)
+    return getResponse(title).toDict()
