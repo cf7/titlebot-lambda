@@ -1,6 +1,7 @@
 import json
 import urllib.request
-import os
+
+from Response import Response
 
 def makeHTTPRequest(url) -> str:
     html_content = None
@@ -25,40 +26,16 @@ def parseHTML(html: str) -> str:
     
 
 responseFactory = {
-    "200": lambda title: {
-            'statusCode': 200,
-            'body': json.dumps(title),
-            'headers': {
-                'Access-Control-Allow-Origin': os.environ['ALLOWED_ORIGINS'],
-                'Content-Type': 'application/json'
-            }
-        },
-    "500": lambda title: {
-            'statusCode': 500,
-            'body': json.dumps(title),
-            'headers': {
-                'Access-Control-Allow-Origin': os.environ['ALLOWED_ORIGINS'],
-                'Content-Type': 'application/json'
-            }
-        },
+    "200": lambda title: Response(200, json.dumps(title)),
+    "500": lambda title: Response(500, json.dumps(title))
 }
 
 def lambda_handler(event, context):
-    response = None
     statusCode = 200
+    url = None
     title = None
-        # for later
-        # action = event.get("httpMethod")
-        # resource = event.get("resource")
-        # pathParameters = event.get("pathParameters")
-        # body = event.get("body")
 
     queryStringParameters = event.get("queryStringParameters")
-    
-    print("queryStringParameters: ", queryStringParameters)
-    print("url: ", queryStringParameters.get("url"))
-    
-    url = None
     
     if queryStringParameters:
         url = queryStringParameters.get("url")
@@ -67,7 +44,6 @@ def lambda_handler(event, context):
         html = None
         if url:
             html = makeHTTPRequest(url)
-    
         if html:
             title = parseHTML(html)
     except Exception as e:
@@ -77,7 +53,5 @@ def lambda_handler(event, context):
         statusCode = 500
         
     getResponse = responseFactory.get(str(statusCode))
-    
-    print(getResponse(title))
     
     return getResponse(title)
