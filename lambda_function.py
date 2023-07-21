@@ -12,7 +12,6 @@ def makeHTTPRequest(url) -> str:
         raise Exception(e)
     return html_content
 
-
 def parseHTML(html: str) -> str:
     start_tag = '<title>'
     end_tag = '</title>'
@@ -23,7 +22,18 @@ def parseHTML(html: str) -> str:
         if end_index != -1:
             return html[start_index:end_index].strip()  # slice the title from between the indices
     return None
-    
+
+"""
+## Beautiful Soup Implementation ##
+from bs4 import BeautifulSoup
+
+def parseHTML(html: str) -> str:
+    soup = BeautifulSoup(html, 'html.parser')
+    title = soup.find('title')
+    print(title) # Prints the tag
+    print(title.string) # Prints the tag string content
+    return title.string
+"""
 
 responseFactory = {
     "200": lambda title: Response(200, json.dumps(title)),
